@@ -3,7 +3,8 @@
 
 * 2018.9.20
 
-  * vue-cli初始化
+  * vue-cli初始化、修改相关配置(引入stylus  stylus-loader  修改eslint配置)
+  * 增加字体文件、公用样式表styl文件
 
 
 
