@@ -1,21 +1,48 @@
-# vue-music
 
-> A Vue.js project
+# 开发进度
 
-## Build Setup
+* 2018.9.20
 
-``` bash
-# install dependencies
-npm install
+  * vue-cli初始化
 
-# serve with hot reload at localhost:8080
-npm run dev
 
-# build for production with minification
-npm run build
 
-# build for production and view the bundle analyzer report
-npm run build --report
+# 开发笔记
+
+* 2018.9.20
+
+## vue-cli 安装 stylus 报错
+
+在初始化vue-cli之后，我想使用stylus来进行样式的开发，但是，在运行过程中，报了如下的一个错：
+
+![](https://github.com/bettermu/blog-picture-store/blob/master/vue-music-app/stylus%E6%8A%A5%E9%94%99.png?raw=true)
+
+上图所示报的错，首先，是没有找到stylus和stylus-loader模块的错，其次，是运行过程中，无法识别vue文件里的style的lang为stylus的样式文件，还有以.styl结尾的样式文件
+
+解决方法如下：
+
+1、安装相关loader
+
+``` js
+npm install stylus stylus-loader style-loader --save-dev
 ```
 
-For a detailed explanation on how things work, check out the [guide](http://vuejs-templates.github.io/webpack/) and [docs for vue-loader](http://vuejs.github.io/vue-loader).
+2、 在webpack.base.conf.js的module的loaders里加入：
+
+``` js
+  {
+     test: /\.styl$/, loader: 'style-loader!css-loader!stylus-loader'
+  },
+```
+
+3、在resolve的extensions里加入了.styl:
+
+```js
+  extensions: ['', '.js', '.vue','.styl']
+```
+
+就解决了加载stylus文件报错的问题
+
+
+
+
