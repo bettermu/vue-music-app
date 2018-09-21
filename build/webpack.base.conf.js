@@ -35,7 +35,8 @@ module.exports = {
     extensions: ['.js', '.vue', '.json'],
     alias: {
       '@': resolve('src'),
-      'common': resolve('src/common')
+      'common': resolve('src/common'),
+      'components':resolve('src/components')
     }
   },
   module: {
@@ -58,7 +59,8 @@ module.exports = {
           limit: 10000,
           name: utils.assetsPath('img/[name].[hash:7].[ext]')
         }
-      },
+			},
+			//多余的一项配置，因为在vue-loader里已经做了处理
       /* {
         test: /\.styl$/,
         loader: 'style-loader!css-loader!stylus-loader',
