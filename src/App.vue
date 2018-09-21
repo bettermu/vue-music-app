@@ -3,6 +3,7 @@
     <!-- <img src="./assets/logo.png">
     <router-view/> -->
     <m-header></m-header>
+    <router-view/>
   </div>
 </template>
 

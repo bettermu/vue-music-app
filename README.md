@@ -6,6 +6,9 @@
   * vue-cli初始化、修改相关配置(引入stylus  stylus-loader  修改eslint配置)
   * 增加字体文件、公用样式表styl文件、增加懒加载默认图片
 
+* 2018.9.21
+  * 编写header组件，增加相关配置
+
 
 
 # 开发笔记
