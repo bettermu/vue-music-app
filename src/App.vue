@@ -14,7 +14,7 @@ export default {
 
 <style scoped lang="stylus">
 
-  #app
-    color:#ccc
+#app
+  color:#ccc
 
 </style>

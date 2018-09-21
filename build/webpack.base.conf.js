@@ -32,7 +32,7 @@ module.exports = {
       : config.dev.assetsPublicPath
   },
   resolve: {
-    extensions: ['.js', '.vue', '.json', '.styl'],
+    extensions: ['.js', '.vue', '.json'],
     alias: {
       '@': resolve('src'),
       'common': resolve('src/common')
@@ -59,11 +59,11 @@ module.exports = {
           name: utils.assetsPath('img/[name].[hash:7].[ext]')
         }
       },
-      {
+      /* {
         test: /\.styl$/,
         loader: 'style-loader!css-loader!stylus-loader',
-        include:[]
-      },
+        exclude: /node_modules/
+      }, */
       {
         test: /\.(mp4|webm|ogg|mp3|wav|flac|aac)(\?.*)?$/,
         loader: 'url-loader',
