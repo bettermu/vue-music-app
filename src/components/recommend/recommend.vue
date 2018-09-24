@@ -1,15 +1,16 @@
 <template>
 <div class="recommend">
-  <slider>
-    <div v-for="item in recommends">
-      <a :href="item.linkUrl">
-        <img :src="item.picUrl">
-      </a>
-    </div>
-  </slider>
+
   <!-- 轮播图区域 -->
   <div class="recommend-content">
-    <div class="slider-wrapper">
+    <div v-if="recommends.length" class="slider-wrapper">
+      <slider>
+        <div v-for="item in recommends">
+          <a :href="item.linkUrl">
+            <img :src="item.picUrl">
+          </a>
+        </div>
+      </slider>
     </div>
   <!-- 推荐列表 -->
     <div class="recommend-list">
@@ -22,7 +23,7 @@
 </template>
 
 <script>
-import { getRecommend } from 'api/recommend'
+import { getRecommend,getDiscList } from 'api/recommend'
 import Slider from 'base/slider/slider'
 import { ERR_OK } from 'api/config'
 export default {
@@ -33,15 +34,22 @@ export default {
   },
   created() {
     this._getRecommend();
+    this._getDiscList()
   },
   methods: {
     _getRecommend() {
       getRecommend().then(res => {
-        console.log(res);
+        //console.log(res);
         if (res.code === ERR_OK) {
           this.recommends=res.data.slider
         }
       });
+    },
+
+    _getDiscList(){
+      getDiscList().then((res)=>{
+        console.log(res)
+      })
     }
   },
   components:{
