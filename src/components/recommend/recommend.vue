@@ -1,13 +1,15 @@
 <template>
 <div class="recommend">
 
-  <!-- 轮播图区域 -->
-  <div class="recommend-content">
-    <div v-if="recommends.length" class="slider-wrapper">
+
+  <scroll ref="scroll" class="recommend-content" :data="discList">
+    <div>
+      <!-- 轮播图区域 -->
+      <div v-if="recommends.length" class="slider-wrapper">
       <slider>
         <div v-for="item in recommends">
           <a :href="item.linkUrl">
-            <img :src="item.picUrl">
+            <img @load="loadImage" :src="item.picUrl">
           </a>
         </div>
       </slider>
@@ -18,7 +20,7 @@
       <ul>
         <li v-for="item in discList" class="item">
           <div class="icon">
-            <img :src="item.imgurl" width="60" height="60">
+            <img v-lazy="item.imgurl" width="60" height="60">
           </div>
           <div class="text">
             <h2 class="name" v-html="item.creator.name"></h2>
@@ -27,45 +29,58 @@
         </li>
       </ul>
     </div>
-  </div>
+    </div>
+
+  </scroll>
 </div>
 
 </template>
 
 <script>
-import { getRecommend,getDiscList } from 'api/recommend'
-import Slider from 'base/slider/slider'
-import { ERR_OK } from 'api/config'
+import { getRecommend, getDiscList } from "api/recommend";
+import Scroll from "base/scroll/scroll";
+import Slider from "base/slider/slider";
+import { ERR_OK } from "api/config";
 export default {
-  data(){
+  data() {
     return {
-      recommends:[],
-      discList:[]
-    }
+      recommends: [],
+      discList: []
+    };
   },
   created() {
     this._getRecommend();
-    this._getDiscList()
+    this._getDiscList();
   },
   methods: {
     _getRecommend() {
       getRecommend().then(res => {
         //console.log(res);
         if (res.code === ERR_OK) {
-          this.recommends=res.data.slider
+          this.recommends = res.data.slider;
         }
       });
     },
 
-    _getDiscList(){
-      getDiscList().then((res)=>{
-        console.log(res)
-        this.discList=res.data.list
-      })
+    _getDiscList() {
+      getDiscList().then(res => {
+        console.log(res);
+        this.discList = res.data.list;
+      });
+    },
+
+    loadImage() {
+
+      if (!this.checkLoaded) {
+        //console.log(this.$refs.scroll)
+        this.$refs.scroll.refresh();
+        this.checkLoaded = true;
+      }
     }
   },
-  components:{
-    Slider
+  components: {
+    Slider,
+    Scroll
   }
 };
 </script>
