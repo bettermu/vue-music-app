@@ -52,7 +52,7 @@ export default {
   watch: {
     data() {
       setTimeout(() => {
-        this._initScroll();
+        this.refresh()
       }, 20);
     }
   }
