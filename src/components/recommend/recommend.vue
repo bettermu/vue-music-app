@@ -1,7 +1,5 @@
 <template>
 <div class="recommend">
-
-
   <scroll ref="scroll" class="recommend-content" :data="discList">
     <div>
       <!-- 轮播图区域 -->
@@ -13,9 +11,9 @@
           </a>
         </div>
       </slider>
-    </div>
+      </div>
   <!-- 推荐列表 -->
-    <div class="recommend-list">
+      <div class="recommend-list">
       <h1 class="list-title">热门歌单推荐</h1>
       <ul>
         <li v-for="item in discList" class="item">
@@ -28,7 +26,10 @@
           </div>
         </li>
       </ul>
+      </div>
     </div>
+    <div class="loading-container" v-show="!discList.length">
+      <loading></loading>
     </div>
 
   </scroll>
@@ -37,6 +38,7 @@
 </template>
 
 <script>
+import Loading from "base/loading/loading";
 import { getRecommend, getDiscList } from "api/recommend";
 import Scroll from "base/scroll/scroll";
 import Slider from "base/slider/slider";
@@ -70,7 +72,6 @@ export default {
     },
 
     loadImage() {
-
       if (!this.checkLoaded) {
         //console.log(this.$refs.scroll)
         this.$refs.scroll.refresh();
@@ -80,7 +81,8 @@ export default {
   },
   components: {
     Slider,
-    Scroll
+    Scroll,
+    Loading
   }
 };
 </script>
