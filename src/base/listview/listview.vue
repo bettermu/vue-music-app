@@ -27,6 +27,9 @@
     <div class="list-fixed" ref="fixed" v-show="fixedTitle">
       <div class="fixed-title">{{fixedTitle}}</div>
     </div>
+    <div class="loading-container" v-show="!data.length">
+      <loading></loading>
+    </div>
   </scroll>
 
 </template>
@@ -34,8 +37,10 @@
 <script>
 import Scroll from "base/scroll/scroll";
 import { getData } from "common/js/dom";
+import Loading from 'base/loading/loading'
 
 const ANCHOR_HEIGHT = 18;
+const TITLE_HEIGHT = 30;
 export default {
   props: {
     data: {
@@ -46,7 +51,9 @@ export default {
   data() {
     return {
       scrollY: -1,
-      currentIndex: 0
+      currentIndex: 0,
+      //滚动差值
+      diff: -1
     };
   },
   created() {
@@ -61,8 +68,13 @@ export default {
         return group.title.substr(0, 1);
       });
     },
-    fixedTitle(){
-      return this.data[this.currentIndex]?this.data[this.currentIndex].title:''
+    fixedTitle() {
+      if (this.scrollY > 0) {
+        return "";
+      }
+      return this.data[this.currentIndex]
+        ? this.data[this.currentIndex].title
+        : "";
     }
   },
   methods: {
@@ -95,17 +107,17 @@ export default {
       }
     },
     _scrollTo(index) {
-      if(!index && index!==0){
-        return
+      if (!index && index !== 0) {
+        return;
       }
       //拖动边界处理
-      if(index<0){
-        index=0
-      }else if(index>this.listHeight.length-2){
-        index=this.listHeight.length-2
+      if (index < 0) {
+        index = 0;
+      } else if (index > this.listHeight.length - 2) {
+        index = this.listHeight.length - 2;
       }
 
-      this.scrollY=-this.listHeight[index]
+      this.scrollY = -this.listHeight[index];
       this.$refs.listview.scrollToElement(this.$refs.listGroup[index], 0);
     }
   },
@@ -113,7 +125,7 @@ export default {
     data() {
       setTimeout(() => {
         this._calculateHeight();
-      },20);
+      }, 20);
     },
     scrollY(newY) {
       const listHeight = this.listHeight;
@@ -124,23 +136,33 @@ export default {
       }
 
       //在中间位置滚动
-      for (let i = 0; i < listHeight.length-1; i++) {
+      for (let i = 0; i < listHeight.length - 1; i++) {
         //上限
         let height1 = listHeight[i];
         //下限
         let height2 = listHeight[i + 1];
         if (-newY >= height1 && -newY < height2) {
           this.currentIndex = i;
-          return
+          this.diff = height2 + newY;
+          return;
         }
       }
 
       // 当滚动到底部，且-newY大于最后一个元素的上限
-      this.currentIndex = listHeight.length - 2
+      this.currentIndex = listHeight.length - 2;
+    },
+    diff(newVal) {
+      let fixedTop = newVal > 0 && newVal < TITLE_HEIGHT ? newVal - TITLE_HEIGHT : 0;
+      if(this.fixedTop===fixedTop){
+        return
+      }
+      this.fixedTop=fixedTop
+      this.$refs.fixed.style.transform=`translate3d(0,${fixedTop}px,0)`
     }
   },
   components: {
-    Scroll
+    Scroll,
+    Loading
   }
 };
 </script>
