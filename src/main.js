@@ -2,6 +2,7 @@ import 'babel-polyfill'
 import Vue from 'vue'
 import App from './App'
 import router from './router'
+import store from './store'
 import 'common/stylus/index.styl'
 // 引入fastclick
 import fastclick from 'fastclick'
@@ -16,6 +17,7 @@ Vue.use(VueLazyLoad,{
 /* eslint-disable no-new */
 new Vue({
   el: '#app',
+  store,
   router,
   render: h => h(App)
 })
