@@ -19,6 +19,10 @@
 <script>
 import Scroll from "base/scroll/scroll";
 import SongList from "base/song-list/song-list";
+import {prefixStyle} from 'common/js/dom'
+
+const transform=prefixStyle('transform')
+const backdrop=prefixStyle('backdrop-filter')
 
 const RESERVED_HEIGHT = 40;
 export default {
@@ -75,12 +79,8 @@ export default {
         blur = Math.min(20, percent * 20);
       }
 
-      this.$refs.layer.style["transform"] = `translate3d(0,${translateY}px,0)`;
-      this.$refs.layer.style[
-        "webkitTransform"
-      ] = `translate3d(0,${translateY}px,0)`;
-      this.$refs.filter.style["backdrop-filter"] = `blur(${blur}px)`;
-      this.$refs.filter.style["webkitBackdrop-filter"] = `blur(${blur}px)`;
+      this.$refs.layer.style[transform] = `translate3d(0,${translateY}px,0)`;
+      this.$refs.filter.style[backdrop] = `blur(${blur}px)`;
       //当滚动到顶部的时候
       if (newY < this.minTranslateY) {
         zIndex = 10;
