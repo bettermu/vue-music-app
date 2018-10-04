@@ -1,4 +1,15 @@
 
+# 项目依赖
+
+* vue-router: vue单页应用路由系统
+* better-scroll: 移动端滚动插件
+* vuex: 数据状态管理工具
+* axios: 数据请求工具
+* vue-lazyload:
+* jsonp: 跨域请求jsonp库
+* fastclick: 移动端点击延迟处理库
+* create-keyframe-animation: js的方式写css3动画
+
 # 开发进度
 
 * 2018.9.20
@@ -48,6 +59,9 @@
 * 2018.10.3
   * 播放器内核数据vuex编写
   * 播放器内核页面结构搭建
+
+* 2018.10.4
+  * 播放器切换动画效果编写
 
 
 # 开发笔记
