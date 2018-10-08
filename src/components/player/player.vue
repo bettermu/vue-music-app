@@ -30,7 +30,7 @@
           <div class="progress-wrapper">
             <span class="time time-l">{{format(currentTime)}}</span>
             <div class="progress-bar-wrapper">
-              <progress-bar ></progress-bar>
+              <progress-bar :percent="percent" @percentChange="onProgressBarChange" ></progress-bar>
             </div>
             <span class="time time-r">{{format(currentSong.duration)}}</span>
           </div>
@@ -80,7 +80,7 @@
 
 <script>
 import { mapGetters, mapMutations } from "vuex";
-import ProgressBar from 'base/progress-bar/progress-bar'
+import ProgressBar from "base/progress-bar/progress-bar";
 import animations from "create-keyframe-animation";
 import { prefixStyle } from "common/js/dom";
 
@@ -88,27 +88,27 @@ const transform = prefixStyle("transform");
 const transitionDuration = prefixStyle("transitionDuration");
 
 export default {
-  data(){
-    return{
+  data() {
+    return {
       songReady: false,
-      currentTime:0
-    }
+      currentTime: 0
+    };
   },
   computed: {
-    playIcon(){
-      return this.playing?'icon-pause':'icon-play'
+    playIcon() {
+      return this.playing ? "icon-pause" : "icon-play";
     },
-    cdCls(){
-      return this.playing?'play':'play pause'
+    cdCls() {
+      return this.playing ? "play" : "play pause";
     },
-    miniIcon(){
-      return this.playing?'icon-pause-mini':'icon-play-mini'
+    miniIcon() {
+      return this.playing ? "icon-pause-mini" : "icon-play-mini";
     },
-    disableCls(){
-      return this.songReady?'':'disable'
+    disableCls() {
+      return this.songReady ? "" : "disable";
     },
-    percent(){
-      return this.currentTime / this.currentSong.duration
+    percent() {
+      return this.currentTime / this.currentSong.duration;
     },
     ...mapGetters([
       "fullScreen",
@@ -127,6 +127,13 @@ export default {
     open() {
       //console.log(this.currentSong)
       this.setFullScreen(true);
+    },
+    onProgressBarChange(percent) {
+      const currentTime = this.currentSong.duration * percent;
+      this.$refs.audio.currentTime = currentTime;
+      if(!this.playing){
+        this.togglePlay()
+      }
     },
     enter(el, done) {
       const { x, y, scale } = this._getPosAndScale();
@@ -170,64 +177,64 @@ export default {
       this.$refs.cdWrapper.style[transform] = "";
     },
     togglePlay() {
-      if(!this.songReady){
-        return
+      if (!this.songReady) {
+        return;
       }
       this.setPlayingState(!this.playing);
     },
-    next(){
-      if(!this.songReady){
-        return
+    next() {
+      if (!this.songReady) {
+        return;
       }
-      let index=this.currentIndex+1
-      if(index===this.playlist.length){
-        index=0
+      let index = this.currentIndex + 1;
+      if (index === this.playlist.length) {
+        index = 0;
       }
-      this.setCurrentIndex(index)
-      if(!this.playing){
-        this.togglePlay()
+      this.setCurrentIndex(index);
+      if (!this.playing) {
+        this.togglePlay();
       }
-      this.songReady=false
+      this.songReady = false;
     },
-    prev(){
-      if(!this.songReady){
-        return
+    prev() {
+      if (!this.songReady) {
+        return;
       }
-      let index=this.currentIndex-1
-      if(index===-1){
-        index=this.playlist.length-1
+      let index = this.currentIndex - 1;
+      if (index === -1) {
+        index = this.playlist.length - 1;
       }
-      this.setCurrentIndex(index)
-      if(!this.playing){
-        this.togglePlay()
+      this.setCurrentIndex(index);
+      if (!this.playing) {
+        this.togglePlay();
       }
-      this.songReady=false
+      this.songReady = false;
     },
-    ready(){
-      this.songReady=true
+    ready() {
+      this.songReady = true;
     },
-    error(){
-      this.songReady=true
+    error() {
+      this.songReady = true;
     },
-    updateTime(e){
-      this.currentTime=e.target.currentTime
+    updateTime(e) {
+      this.currentTime = e.target.currentTime;
     },
-    format(interval){
+    format(interval) {
       //时间戳向下取整
-      interval=interval | 0
+      interval = interval | 0;
 
-      const minute=interval/60 | 0
-      const second=this._pad(interval%60)
+      const minute = (interval / 60) | 0;
+      const second = this._pad(interval % 60);
 
-      return `${minute}:${second}`
+      return `${minute}:${second}`;
     },
-    _pad(num,n=2){
-      let len = num.toString().length
-      while(len<n){
-        num='0'+num
-        len++
+    _pad(num, n = 2) {
+      let len = num.toString().length;
+      while (len < n) {
+        num = "0" + num;
+        len++;
       }
-      return num
+      return num;
     },
     _getPosAndScale() {
       const targetWidth = 40;
@@ -248,7 +255,7 @@ export default {
     ...mapMutations({
       setFullScreen: "SET_FULL_SCREEN",
       setPlayingState: "SET_PLAYING_STATE",
-      setCurrentIndex:"SET_CURRENT_INDEX"
+      setCurrentIndex: "SET_CURRENT_INDEX"
     })
   },
   watch: {
@@ -265,7 +272,7 @@ export default {
       });
     }
   },
-  components:{
+  components: {
     ProgressBar
   }
 };
