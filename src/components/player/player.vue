@@ -20,25 +20,32 @@
         <div class="middle">
           <div class="middle-l">
             <div class="cd-wrapper" ref="cdWrapper">
-              <div class="cd">
+              <div class="cd" :class="cdCls">
                 <img :src="currentSong.image" class="image" alt="">
               </div>
             </div>
           </div>
         </div>
         <div class="bottom">
+          <div class="progress-wrapper">
+            <span class="time time-l">{{format(currentTime)}}</span>
+            <div class="progress-bar-wrapper">
+              <progress-bar></progress-bar>
+            </div>
+            <span class="time time-r">{{format(currentSong.duration)}}</span>
+          </div>
           <div class="operators">
             <div class="icon i-left">
               <i class="icon-sequence"></i>
             </div>
-            <div class="icon i-left">
-              <i class="icon-prev"></i>
+            <div class="icon i-left" :class="disableCls">
+              <i @click="prev" class="icon-prev"></i>
             </div>
-            <div class="icon i-center">
-              <i class="icon-play"></i>
+            <div class="icon i-center" :class="disableCls">
+              <i @click="togglePlay" :class="playIcon"></i>
             </div>
-            <div class="icon i-right">
-              <i class="icon-next"></i>
+            <div class="icon i-right" :class="disableCls">
+              <i @click="next" class="icon-next"></i>
             </div>
             <div class="icon i-right">
               <i class="icon icon-not-favorite"></i>
@@ -50,19 +57,22 @@
 
     <transition name="mini">
       <div class="mini-player" v-show="!fullScreen" @click="open">
-        <div class="icon">
-          <img :src="currentSong.image" width="40" height="40"  alt="">
+        <div class="icon" >
+          <img :class="cdCls" :src="currentSong.image" width="40" height="40"  alt="">
         </div>
         <div class="text">
           <h2 class="name" v-html="currentSong.name"></h2>
           <p class="desc" v-html="currentSong.singer"></p>
         </div>
-        <div class="control"></div>
+        <div class="control">
+          <i :class="miniIcon" @click.stop="togglePlay"></i>
+        </div>
         <div class="control">
           <i class="icon-playlist"></i>
         </div>
       </div>
     </transition>
+    <audio :src="currentSong.url" ref="audio" @play="ready" @error="error" @timeupdate="updateTime" ></audio>
 
   </div>
 
@@ -70,15 +80,40 @@
 
 <script>
 import { mapGetters, mapMutations } from "vuex";
+import ProgressBar from 'base/progress-bar/progress-bar'
 import animations from "create-keyframe-animation";
-import {prefixStyle} from 'common/js/dom'
+import { prefixStyle } from "common/js/dom";
 
 const transform = prefixStyle("transform");
 const transitionDuration = prefixStyle("transitionDuration");
 
 export default {
+  data(){
+    return{
+      songReady: false,
+      currentTime:0
+    }
+  },
   computed: {
-    ...mapGetters(["fullScreen", "playlist", "currentSong"])
+    playIcon(){
+      return this.playing?'icon-pause':'icon-play'
+    },
+    cdCls(){
+      return this.playing?'play':'play pause'
+    },
+    miniIcon(){
+      return this.playing?'icon-pause-mini':'icon-play-mini'
+    },
+    disableCls(){
+      return this.songReady?'':'disable'
+    },
+    ...mapGetters([
+      "fullScreen",
+      "playlist",
+      "currentSong",
+      "playing",
+      "currentIndex"
+    ])
   },
   methods: {
     //关闭全屏播放器
@@ -87,6 +122,7 @@ export default {
     },
     //打开全屏播放器
     open() {
+      //console.log(this.currentSong)
       this.setFullScreen(true);
     },
     enter(el, done) {
@@ -121,12 +157,74 @@ export default {
     leave(el, done) {
       this.$refs.cdWrapper.style.transition = "all 0.4s";
       const { x, y, scale } = this._getPosAndScale();
-      this.$refs.cdWrapper.style[transform] = `translate3d(${x}px,${y}px,0) scale(${scale})`;
+      this.$refs.cdWrapper.style[
+        transform
+      ] = `translate3d(${x}px,${y}px,0) scale(${scale})`;
       this.$refs.cdWrapper.addEventListener("transitionend", done);
     },
     afterLeave() {
       this.$refs.cdWrapper.style.transition = "";
       this.$refs.cdWrapper.style[transform] = "";
+    },
+    togglePlay() {
+      if(!this.songReady){
+        return
+      }
+      this.setPlayingState(!this.playing);
+    },
+    next(){
+      if(!this.songReady){
+        return
+      }
+      let index=this.currentIndex+1
+      if(index===this.playlist.length){
+        index=0
+      }
+      this.setCurrentIndex(index)
+      if(!this.playing){
+        this.togglePlay()
+      }
+      this.songReady=false
+    },
+    prev(){
+      if(!this.songReady){
+        return
+      }
+      let index=this.currentIndex-1
+      if(index===-1){
+        index=this.playlist.length-1
+      }
+      this.setCurrentIndex(index)
+      if(!this.playing){
+        this.togglePlay()
+      }
+      this.songReady=false
+    },
+    ready(){
+      this.songReady=true
+    },
+    error(){
+      this.songReady=true
+    },
+    updateTime(e){
+      this.currentTime=e.target.currentTime
+    },
+    format(interval){
+      //时间戳向下取整
+      interval=interval | 0
+
+      const minute=interval/60 | 0
+      const second=this._pad(interval%60)
+
+      return `${minute}:${second}`
+    },
+    _pad(num,n=2){
+      let len = num.toString().length
+      while(len<n){
+        num='0'+num
+        len++
+      }
+      return num
     },
     _getPosAndScale() {
       const targetWidth = 40;
@@ -145,8 +243,27 @@ export default {
       };
     },
     ...mapMutations({
-      setFullScreen: "SET_FULL_SCREEN"
+      setFullScreen: "SET_FULL_SCREEN",
+      setPlayingState: "SET_PLAYING_STATE",
+      setCurrentIndex:"SET_CURRENT_INDEX"
     })
+  },
+  watch: {
+    currentSong() {
+      //dom准备好之后，立刻调用播放
+      this.$nextTick(() => {
+        this.$refs.audio.play();
+      });
+    },
+    playing(newPlaying) {
+      const audio = this.$refs.audio;
+      this.$nextTick(() => {
+        newPlaying ? audio.play() : audio.pause();
+      });
+    }
+  },
+  components:{
+    ProgressBar
   }
 };
 </script>
