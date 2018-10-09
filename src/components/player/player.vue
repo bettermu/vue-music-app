@@ -315,6 +315,7 @@ export default {
       //dom准备好之后，立刻调用播放
       this.$nextTick(() => {
         this.$refs.audio.play();
+        this.currentSong.getLyric()
       });
     },
     playing(newPlaying) {
