@@ -15,6 +15,7 @@ export default class Song {
   }
 
   getLyric() {
+    //如果歌词存在
     if (this.lyric) {
       return Promise.resolve(this.lyric)
     }
@@ -23,6 +24,7 @@ export default class Song {
       getLyric(this.mid).then((res) => {
         if (res.retcode === ERR_OK) {
           this.lyric = Base64.decode(res.lyric)
+          //console.log(this.lyric)
           resolve(this.lyric)
         } else {
           reject('no lyric')
