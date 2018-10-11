@@ -21,11 +21,14 @@
              @touchstart.prevent="middleTouchStart"
              @touchmove.prevent="middleTouchMove"
              @touchend="middleTouchEnd">
-          <div class="middle-l">
+          <div class="middle-l" ref="middleL">
             <div class="cd-wrapper" ref="cdWrapper">
               <div class="cd" :class="cdCls">
                 <img :src="currentSong.image" class="image" alt="">
               </div>
+            </div>
+            <div class="playing-lyric-wrapper">
+              <div class="playing-lyric">{{playingLyric}}</div>
             </div>
           </div>
           <scroll class="middle-r" ref="lyricList" :data="currentLyric && currentLyric.lines">
@@ -121,7 +124,8 @@ export default {
       radius: 32,
       currentLyric: null,
       currentLineNum: 0,
-      currentShow: "cd"
+      currentShow: "cd",
+      playingLyric: ""
     };
   },
   computed: {
@@ -181,6 +185,7 @@ export default {
     },
     handleLyric({ lineNum, txt }) {
       this.currentLineNum = lineNum;
+      this.playingLyric = txt;
       if (lineNum > 5) {
         let lineEl = this.$refs.lyricLine[lineNum - 5];
         this.$refs.lyricList.scrollToElement(lineEl, 1000);
@@ -205,28 +210,49 @@ export default {
         return;
       }
       const left = this.currentShow === "cd" ? 0 : -window.innerWidth;
-      const offsetWidth = Math.min(0, Math.max(-window.innerWidth, left + deltaX));
+      const offsetWidth = Math.min(
+        0,
+        Math.max(-window.innerWidth, left + deltaX)
+      );
       //console.log(offsetWidth)
-      this.touch.percent=Math.abs(offsetWidth/window.innerWidth)
-      this.$refs.lyricList.$el.style[transform] = `translate3d(${offsetWidth}px,0,0)`;
+      this.touch.percent = Math.abs(offsetWidth / window.innerWidth);
+      this.$refs.lyricList.$el.style[
+        transform
+      ] = `translate3d(${offsetWidth}px,0,0)`;
+      this.$refs.lyricList.$el.style[transitionDuration] = 0;
+      this.$refs.middleL.style.opacity = 1 - this.touch.percent;
+      this.$refs.middleL.style[transitionDuration] = 0;
     },
     middleTouchEnd(e) {
-      let offsetWidth
-      if(this.currentShow==='cd'){
-        if(this.touch.percent>0.1){
-          offsetWidth=-window.innerWidth
-          this.currentShow='lyric'
-        }else {
-          offsetWidth=0
-        }
-      }else {
-        if(this.touch.percent<0.9){
-          offsetWidth=0
-          this.currentShow='cd'
+      let offsetWidth;
+      let opacity;
+      if (this.currentShow === "cd") {
+        if (this.touch.percent > 0.1) {
+          offsetWidth = -window.innerWidth;
+          opacity = 0;
+          this.currentShow = "lyric";
         } else {
-          offsetWidth = -window.innerWidth
+          offsetWidth = 0;
+          opacity = 1;
+        }
+      } else {
+        if (this.touch.percent < 0.9) {
+          offsetWidth = 0;
+          this.currentShow = "cd";
+          opacity = 1;
+        } else {
+          offsetWidth = -window.innerWidth;
+          opacity = 0;
         }
       }
+      const time = 300;
+      this.$refs.lyricList.$el.style[
+        transform
+      ] = `translate3d(${offsetWidth}px,0,0)`;
+      this.$refs.middleL.style.opacity = opacity;
+      this.$refs.lyricList.$el.style[transitionDuration] = `${time}ms`;
+      this.$refs.middleL.style[transitionDuration] = `${time}ms`;
+      this.touch.initiated = false;
     },
     changeMode() {
       const mode = (this.mode + 1) % 3;
@@ -252,6 +278,9 @@ export default {
       this.$refs.audio.currentTime = currentTime;
       if (!this.playing) {
         this.togglePlay();
+      }
+      if (this.currentLyric) {
+        this.currentLyric.seek(currentTime * 1000);
       }
     },
     enter(el, done) {
@@ -300,20 +329,27 @@ export default {
         return;
       }
       this.setPlayingState(!this.playing);
+      if (this.currentLyric) {
+        this.currentLyric.togglePlay();
+      }
     },
     next() {
       if (!this.songReady) {
         return;
       }
-      let index = this.currentIndex + 1;
-      if (index === this.playlist.length) {
-        index = 0;
+      if (this.playlist.length === 1) {
+        this.loop();
+      } else {
+        let index = this.currentIndex + 1;
+        if (index === this.playlist.length) {
+          index = 0;
+        }
+        this.setCurrentIndex(index);
+        if (!this.playing) {
+          this.togglePlay();
+        }
+        this.songReady = false;
       }
-      this.setCurrentIndex(index);
-      if (!this.playing) {
-        this.togglePlay();
-      }
-      this.songReady = false;
     },
     prev() {
       if (!this.songReady) {
@@ -340,6 +376,9 @@ export default {
     loop() {
       this.$refs.audio.currentTime = 0;
       this.$refs.audio.play();
+      if (this.currentLyric) {
+        this.currentLyric.seek(0);
+      }
     },
     ready() {
       this.songReady = true;
@@ -398,6 +437,9 @@ export default {
       }
       if (newSong.id === oldSong.id) {
         return;
+      }
+      if (this.currentLyric) {
+        this.currentLyric.stop();
       }
       //dom准备好之后，立刻调用播放
       this.$nextTick(() => {
